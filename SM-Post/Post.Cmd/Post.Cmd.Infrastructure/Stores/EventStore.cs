@@ -58,7 +58,8 @@ namespace Post.Cmd.Infrastructure.Stores
 
                 await _eventStoreRepository.SaveAsync(eventModel);
 
-                var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
+                //var topic = Environment.GetEnvironmentVariable("KAFKA_TOPIC");
+                var topic = "SocialMediaPostEvents";
                 await _eventProducer.ProduceAsync(topic, @event);
 
             }
