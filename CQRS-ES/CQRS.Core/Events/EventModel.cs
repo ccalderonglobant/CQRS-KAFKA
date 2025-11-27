@@ -14,6 +14,7 @@ namespace CQRS.Core.Events
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public DateTime TimeStamp { get; set; }
+        [BsonRepresentation(BsonType.String)]
         public Guid AggregateIdentifier { get; set; }
         public string AggregateType { get; set; }
         public int Version { get; set; }

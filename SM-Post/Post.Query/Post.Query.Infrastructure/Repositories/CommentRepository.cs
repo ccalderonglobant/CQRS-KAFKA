@@ -36,7 +36,7 @@ namespace Post.Query.Infrastructure.Repositories
             if (comment == null) return;
 
             context.Comments.Remove(comment);
-            _ = context.SaveChangesAsync();
+            _ = await context.SaveChangesAsync();
         }
 
         public async Task<CommentEntity> GetByIdAsync(Guid commentId)

@@ -1,4 +1,6 @@
 ﻿using CQRS.Core.Commands;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 
 namespace Post.Cmd.Api.Commands
 {
