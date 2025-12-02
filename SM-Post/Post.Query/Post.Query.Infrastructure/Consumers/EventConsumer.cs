@@ -37,18 +37,37 @@ namespace Post.Query.Infrastructure.Consumers
                 var consumeResult = consumer.Consume();
                 if (consumeResult?.Message == null) continue;
 
-                var options = new JsonSerializerOptions { Converters = { new EventJsonConverter() } };
-                var @event = JsonSerializer.Deserialize<BaseEvent>(consumeResult.Message.Value, options);
-                var handleMethod = _eventHandler.GetType().GetMethod("On", new Type[] { @event.GetType() });
+                ProcessEvent(consumeResult.Message.Value);
 
-                if (handleMethod == null)
-                {
-                    throw new ArgumentNullException(nameof(handleMethod),"Could not find event handler method!");
-                }
-
-                handleMethod.Invoke(_eventHandler, new object[] {@event});
                 consumer.Commit(consumeResult);
             }
+        }
+
+        public void ProcessEvent(string message)
+        {
+            var options = new JsonSerializerOptions
+            {
+                Converters = { new EventJsonConverter() }
+            };
+
+            var @event = JsonSerializer.Deserialize<BaseEvent>(message, options);
+            if (@event == null)
+            {
+                throw new ArgumentNullException(nameof(@event), "Could not deserialize event message!");
+            }
+
+            var handleMethod = _eventHandler
+                .GetType()
+                .GetMethod("On", new Type[] { @event.GetType() });
+
+            if (handleMethod == null)
+            {
+                throw new ArgumentNullException(nameof(handleMethod), "Could not find event handler method!");
+            }
+
+            // On(...) devuelve Task, pero en tu implementación original tampoco se esperaba
+            // (se llamaba por reflexión y ya). Mantenemos el mismo comportamiento:
+            handleMethod.Invoke(_eventHandler, new object[] { @event });
         }
     }
 }

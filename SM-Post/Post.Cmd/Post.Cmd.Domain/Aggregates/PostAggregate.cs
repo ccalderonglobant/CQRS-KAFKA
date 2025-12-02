@@ -27,6 +27,11 @@ namespace Post.Cmd.Domain.Aggregates
 
         public PostAggregate(Guid id, string author, string message)
         {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new InvalidOperationException($"The value of {nameof(message)} cannot be null or empty. Please provide a valid {nameof(message)}!");
+            }
+
             RaiseEvent(new PostCreatedEvent
             {
                 Id = id,
@@ -43,13 +48,19 @@ namespace Post.Cmd.Domain.Aggregates
             _author = @event.Author;
         }
 
-        public void EditMessage(string message)
+        public void EditMessage(string message, string username)
         {
             if (!_active)
             {
                 throw new InvalidOperationException("You cannot edit the message of an inactive post!");
             }
-            if(string.IsNullOrWhiteSpace(message))
+
+            if (!_author.Equals(username, StringComparison.CurrentCultureIgnoreCase))
+            {
+                throw new InvalidOperationException("You are not allowed to edit a post that was made by someone else!");
+            }
+                
+            if (string.IsNullOrWhiteSpace(message))
             {
                 throw new InvalidOperationException($"The value of {nameof(message)} cannot be null or empty. Please provide a valid {nameof(message)}!");
             }
