@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Post.Query.Domain.Entities
 {
-    [Table("Post")]
+    [Table("Post", Schema = "dbo")]
     public class PostEntity
     {
         [Key]

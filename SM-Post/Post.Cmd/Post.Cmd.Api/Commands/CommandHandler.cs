@@ -22,7 +22,7 @@ namespace Post.Cmd.Api.Commands
         public async Task HandleAsync(EditMessageCommand command)
         {
             var aggregate = await _eventSourcingHandler.GetByIdAsync(command.Id);
-            aggregate.EditMessage(command.Message);
+            aggregate.EditMessage(command.Message, command.Username);
 
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
