@@ -16,13 +16,15 @@ namespace Post.Cmd.Tests
     public class CommandHandlerTests
     {
         private Mock<IEventSourcingHandler<PostAggregate>> _eventSourcingHandlerMock = null!;
+        private Mock<IPostAggregateFactory> _postAggregateFactoryMock = null!;
         private CommandHandler _handler = null!;
 
         [SetUp]
         public void SetUp()
         {
             _eventSourcingHandlerMock = new Mock<IEventSourcingHandler<PostAggregate>>();
-            _handler = new CommandHandler(_eventSourcingHandlerMock.Object);
+            _postAggregateFactoryMock = new Mock<IPostAggregateFactory>();
+            _handler = new CommandHandler(_eventSourcingHandlerMock.Object, _postAggregateFactoryMock.Object);
         }
 
         [Test]

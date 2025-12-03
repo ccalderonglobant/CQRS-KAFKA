@@ -1,5 +1,6 @@
 ﻿using CQRS.Core.Domain;
 using CQRS.Core.Events;
+using CQRS.Core.Handlers;
 using CQRS.Core.Producers;
 using Moq;
 using Post.Cmd.Api.Commands;
@@ -41,6 +42,14 @@ namespace Post.Cmd.Tests
     [TestFixture]
     public class CommandEndToEndTests
     {
+        private Mock<IPostAggregateFactory> _postAggregateFactoryMock = null!;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _postAggregateFactoryMock = new Mock<IPostAggregateFactory>();
+        }
+
         [Test]
         public async Task NewPostCommand_FlowsThrough_CommandHandler_EventStore_Producer_And_Rehydration()
         {
@@ -59,7 +68,7 @@ namespace Post.Cmd.Tests
             var eventSourcingHandler = new EventSourcingHandler(eventStore);
 
             // Real CommandHandler.
-            var commandHandler = new CommandHandler(eventSourcingHandler);
+            var commandHandler = new CommandHandler(eventSourcingHandler, _postAggregateFactoryMock.Object);
 
             var postId = Guid.NewGuid();
             var author = "cesar";
@@ -120,7 +129,7 @@ namespace Post.Cmd.Tests
 
             var eventStore = new EventStore(repo, producerMock.Object);
             var eventSourcingHandler = new EventSourcingHandler(eventStore);
-            var commandHandler = new CommandHandler(eventSourcingHandler);
+            var commandHandler = new CommandHandler(eventSourcingHandler, _postAggregateFactoryMock.Object);
 
             var postId = Guid.NewGuid();
 

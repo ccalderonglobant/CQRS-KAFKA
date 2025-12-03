@@ -13,34 +13,13 @@ using System.Threading.Tasks;
 
 namespace Post.Query.Infrastructure.Consumers
 {
-    public class EventConsumer : IEventConsumer
+    public class EventConsumer : KafkaConsumerBase
     {
-        private readonly ConsumerConfig _config;
         private readonly IEventHandler _eventHandler;
 
-        public EventConsumer(IOptions<ConsumerConfig> config, IEventHandler eventHandler)
+        public EventConsumer(IOptions<ConsumerConfig> config, IEventHandler eventHandler) : base(config)
         {
-            _config = config.Value;
             _eventHandler = eventHandler;
-        }
-
-        public void Consume(string topic)
-        {
-            using var consumer = new ConsumerBuilder<string, string>(_config)
-                .SetKeyDeserializer(Deserializers.Utf8)
-                .SetValueDeserializer(Deserializers.Utf8)
-                .Build();
-            consumer.Subscribe(topic);
-
-            while (true)
-            { 
-                var consumeResult = consumer.Consume();
-                if (consumeResult?.Message == null) continue;
-
-                ProcessEvent(consumeResult.Message.Value);
-
-                consumer.Commit(consumeResult);
-            }
         }
 
         public void ProcessEvent(string message)
@@ -65,9 +44,12 @@ namespace Post.Query.Infrastructure.Consumers
                 throw new ArgumentNullException(nameof(handleMethod), "Could not find event handler method!");
             }
 
-            // On(...) devuelve Task, pero en tu implementación original tampoco se esperaba
-            // (se llamaba por reflexión y ya). Mantenemos el mismo comportamiento:
             handleMethod.Invoke(_eventHandler, new object[] { @event });
+        }
+
+        protected override void ProcessMessage(string message)
+        {
+            ProcessEvent(message);
         }
     }
 }

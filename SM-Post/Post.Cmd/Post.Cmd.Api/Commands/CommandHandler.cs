@@ -7,15 +7,21 @@ namespace Post.Cmd.Api.Commands
     public class CommandHandler : ICommandHandler
     {
         private readonly IEventSourcingHandler<PostAggregate> _eventSourcingHandler;
+        private readonly IPostAggregateFactory _postAggregateFactory;
 
-        public CommandHandler(IEventSourcingHandler<PostAggregate> eventSourcingHandler)
+        public CommandHandler(IEventSourcingHandler<PostAggregate> eventSourcingHandler, IPostAggregateFactory postAggregateFactory)
         {
             _eventSourcingHandler = eventSourcingHandler;
+            _postAggregateFactory = postAggregateFactory;
         }
 
         public async Task HandleAsync(NewPostCommand command)
         {
-            var aggregate = new PostAggregate(command.Id, command.Author, command.Message);
+            var aggregate = _postAggregateFactory.Create(
+                command.Id,
+                command.Author,
+                command.Message);
+
             await _eventSourcingHandler.SaveAsync(aggregate);
         }
 

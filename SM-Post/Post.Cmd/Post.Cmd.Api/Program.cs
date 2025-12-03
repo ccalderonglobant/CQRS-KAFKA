@@ -32,9 +32,21 @@ builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection(nameo
 builder.Services.Configure<ProducerConfig>(builder.Configuration.GetSection(nameof(ProducerConfig)));
 
 builder.Services.AddScoped<IEventStoreRepository, EventStoreRepository>();
-builder.Services.AddScoped<IEventStore, EventStore>();
+
+// Register the concrete EventStore
+builder.Services.AddScoped<EventStore>();
+
+// IEventStore is resolved as a LoggingEventStore decorator
+builder.Services.AddScoped<IEventStore>(sp =>
+{
+    var inner = sp.GetRequiredService<EventStore>();
+    var logger = sp.GetRequiredService<ILogger<LoggingEventStore>>();
+    return new LoggingEventStore(inner, logger);
+});
+
 builder.Services.AddScoped<IEventProducer, EventProducer>();
 builder.Services.AddScoped<IEventSourcingHandler<PostAggregate>, EventSourcingHandler>();
+builder.Services.AddScoped<IPostAggregateFactory, PostAggregateFactory>();
 builder.Services.AddScoped<ICommandHandler, CommandHandler>();
 
 var commandHandler = builder.Services.BuildServiceProvider().GetRequiredService<ICommandHandler>();
